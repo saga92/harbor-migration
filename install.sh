@@ -1,4 +1,4 @@
 #!/bin/bash
 source ./migration.cfg
 source ./alembic.tpl > ./alembic.ini
-mysql -h${db_host} -u${db_username} -p${db_password} < ./alembic.sql
+echo $proj_path|sed "s/\//\\\\\\\\\//g"|xargs -i sed -i "s/:proj_path:/{}/g" ./run.sh
