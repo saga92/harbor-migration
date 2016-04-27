@@ -8,12 +8,14 @@ RUN apt-get install -y curl python python-pip git python-mysqldb
 
 RUN pip install alembic
 
-RUN cd /home && git clone https://github.com/saga92/harbor-migration.git
+#RUN cd /home && git clone https://github.com/saga92/harbor-migration.git
 
-COPY ./harbor-migration /home/harbor-migration
+WORKDIR /home/harbor-migration
 
-COPY ./migration.cfg /home/harbor-migration/
+COPY ./harbor-migration ./
 
-RUN /home/harbor-migration/install.sh
+COPY ./migration.cfg ./
 
-ENTRYPOINT ["/home/harbor-migration/run.sh"] 
+RUN ./install.sh
+
+ENTRYPOINT ["./run.sh"] 

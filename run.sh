@@ -17,6 +17,13 @@ if [ $# > 0 ]; then
     init)
         mysql -h${db_host} -u${db_username} -p${db_password} < :proj_path:/alembic.sql
         ;;
+    backup)
+        mysqldump -h${db_host} -u${db_username} -p${db_password} --add-drop-database --databases registry > :proj_path:/backup/registry.sql
+        ;;
+    restore)
+        BAKPATH="$2"
+        mysql -h${db_host} -u${db_username} -p${db_password} < ${BAKPATH}/registry.sql
+        ;;
     h|help)
         echo "run.sh up|upgrade"
         echo "down|downgrade"
