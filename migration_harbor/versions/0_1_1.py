@@ -58,10 +58,22 @@ class ProjectRole(Base):
     sa.ForeignKeyConstraint(['role_id'], [u'role.role_id'])
     sa.ForeignKeyConstraint(['project_id'], [u'project.project_id'])
 
+class Access(Base):
+    __tablename__ = 'access'
+
+    access_id = sa.Column(sa.Integer(), primary_key = True)
+    access_code = sa.Column(sa.String(1))
+    comment = sa.Column(sa.String(30))
+
 def upgrade():
     bind = op.get_bind()
     session = Session(bind=bind)
-    #create property table
+
+    #delete M from table access
+    acc = session.query(Access).filter_by(access_id=1).first()
+    session.delete(acc)
+
+    #create table property
     Properties.__table__.create(bind)
     session.add(Properties(k='schema_version', v='0.1.1'))
 
@@ -93,6 +105,10 @@ def upgrade():
 def downgrade():
     bind = op.get_bind()
     session = Session(bind=bind)
+
+    #add M to table access
+    session.add(Access(access_id=1, access_code='A', comment='All access for the system'))
+
     #drop column from table user
     op.drop_column('user', 'update_time')
     op.drop_column('user', 'sysadmin_flag')
