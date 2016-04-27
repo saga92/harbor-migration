@@ -1,13 +1,13 @@
 """0.1.0 to 0.1.1
 
-Revision ID: f3629fe9f47f
+Revision ID: 0.1.1
 Revises: 
 Create Date: 2016-04-18 18:32:14.101897
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'f3629fe9f47f'
+revision = '0.1.1'
 down_revision = None
 branch_labels = None
 depends_on = None
