@@ -12,10 +12,10 @@ RUN pip install alembic
 
 WORKDIR /home/harbor-migration
 
-COPY ./harbor-migration ./
+COPY ./ ./
 
 COPY ./migration.cfg ./
 
 RUN ./install.sh
 
-ENTRYPOINT ["./run.sh"] 
+#ENTRYPOINT ["./run.sh"] 
