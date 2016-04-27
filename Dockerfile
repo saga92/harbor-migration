@@ -18,4 +18,4 @@ COPY ./migration.cfg ./
 
 RUN ./install.sh
 
-#ENTRYPOINT ["./run.sh"] 
+ENTRYPOINT ["./run.sh"] 
