@@ -1,4 +1,4 @@
-FROM mysql:latest
+FROM mysql:5.6
 
 RUN sed -i -e 's/us.archive.ubuntu.com/archive.ubuntu.com/g' /etc/apt/sources.list
 
@@ -8,9 +8,9 @@ RUN apt-get install -y curl python python-pip git python-mysqldb
 
 RUN pip install alembic
 
-#RUN cd /home && git clone https://github.com/saga92/harbor-migration.git
+RUN mkdir -p /harbor-migration
 
-WORKDIR /home/harbor-migration
+WORKDIR /harbor-migration
 
 COPY ./ ./
 

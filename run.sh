@@ -1,34 +1,46 @@
 #!/bin/bash
-cd :proj_path:
 
 source ./migration.cfg
 
-if [ $# > 0 ]; then
+WAITTIME=60
+
+DBCNF="-hlocalhost -u${db_username} -p${db_password}"
+
+if [[ $# > 0 ]]; then
+    if [[ $1 = "help" || $1 = "h" ]]; then
+        echo "run.sh up|upgrade"
+        echo "down|downgrade"
+        echo "h|help"
+        exit 0
+    fi
+
+    nohup mysqld 2>&1 > ./nohup.log&
+    for i in $(seq 1 $WAITTIME); do
+        echo "$(/usr/sbin/service mysql status)"
+        if [[ "$(/usr/sbin/service mysql status)" =~ "not running" ]]; then
+            sleep 1
+        else
+            break
+        fi
+    done
+
     key="$1"
     case $key in
     up|upgrade)
         VERSION="$2"
-        alembic -c :proj_path:/alembic.ini upgrade ${VERSION}
+        mysql $DBCNF < ./alembic.sql
+        alembic -c ./alembic.ini upgrade ${VERSION}
         ;;
     down|downgrade)
         VERSION="$2"
-        alembic -c :proj_path:/alembic.ini downgrade ${VERSION}
-        ;;
-    init)
-        mysql -h${db_host} -u${db_username} -p${db_password} < :proj_path:/alembic.sql
+        mysql $DBCNF < ./alembic.sql
+        alembic -c ./alembic.ini downgrade ${VERSION}
         ;;
     backup)
-        mysqldump -h${db_host} -u${db_username} -p${db_password} --add-drop-database --databases registry > :proj_path:/backup/registry.sql
+        mysqldump $DBCNF --add-drop-database --databases registry > ./backup/registry.sql
         ;;
     restore)
-        BAKPATH="$2"
-        mysql -h${db_host} -u${db_username} -p${db_password} < ${BAKPATH}/registry.sql
-        ;;
-    h|help)
-        echo "run.sh up|upgrade"
-        echo "down|downgrade"
-        echo "init"
-        echo "h|help"
+        mysql $DBCNF < ./backup/registry.sql
         ;;
     *)
         echo "unknown option"
