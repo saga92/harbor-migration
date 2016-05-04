@@ -12,7 +12,7 @@ harbor-migration is a project for migrating database schema between different ve
     docker build -t your-image-name .
     ```
 
-###migration
+###migration operation
 - show instruction of harbor-migration
 
     ```docker run your-image-name help```
@@ -36,3 +36,14 @@ harbor-migration is a project for migrating database schema between different ve
 - perform database schema downgrade
 
     ```docker run -v /data/database:/var/lib/mysql your-image-name down base```
+
+###migration step
+- step 1: stop and remove harbor service
+``` 
+docker-compose stop && docker-compose rm -f
+```
+- step 2: perform migration operation
+- step 3: rebuild newest harbor images and restart service
+```
+docker-compose build && docker-compose up -d
+```
