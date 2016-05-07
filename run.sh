@@ -4,67 +4,89 @@ source ./migration.cfg
 
 WAITTIME=60
 
-
 DBCNF="-hlocalhost -u${db_username} -p${db_password}"
 
-if [[ $# > 0 ]]; then
-    if [[ $1 = "help" || $1 = "h" ]]; then
-        echo "Usage:"
-        echo "backup                perform database backup"
-        echo "restore               perform database restore"
-        echo "up,   upgrade         perform database schema upgrade"
-        echo "down, downgrade       perform database schema downgrade"
-        echo "h,    help            usage help"
-        exit 0
-    fi
-
-    echo 'Trying to start mysql server...'
-    DBRUN=0
-    nohup mysqld 2>&1 > ./nohup.log&
-    for i in $(seq 1 $WAITTIME); do
-        echo "$(/usr/sbin/service mysql status)"
-        if [[ "$(/usr/sbin/service mysql status)" =~ "not running" ]]; then
-            sleep 1
-        else
-            DBRUN=1
-            break
-        fi
-    done
-
-    if [[ $DBRUN -eq 0 ]]; then
-        echo "timeout. Can't run mysql server."
-        exit 1
-    fi
-
-    key="$1"
-    case $key in
-    up|upgrade)
-        echo "Performing upgrade ${VERSION}..."
-        VERSION="$2"
-        mysql $DBCNF < ./alembic.sql
-        alembic -c ./alembic.ini upgrade ${VERSION}
-        echo "Upgrade performed."
-        ;;
-    down|downgrade)
-        echo "Performing downgrade ${VERSION}..."
-        VERSION="$2"
-        mysql $DBCNF < ./alembic.sql
-        alembic -c ./alembic.ini downgrade ${VERSION}
-        echo "Downgrade performed."
-        ;;
-    backup)
-        echo "Performing backup..."
-        mysqldump $DBCNF --add-drop-database --databases registry > ./backup/registry.sql
-        echo "Backup performed."
-        ;;
-    restore)
-        echo "Performing restore..."
-        mysql $DBCNF < ./backup/registry.sql
-        echo "Restore performed."
-        ;;
-    *)
-        echo "unknown option"
-        exit 0
-        ;;
-    esac
+if [[ $1 = "help" || $1 = "h" || $# = 0 ]]; then
+    echo "Usage:"
+    echo "backup                perform database backup"
+    echo "restore               perform database restore"
+    echo "up,   upgrade         perform database schema upgrade"
+    #echo "down, downgrade       perform database schema downgrade"
+    echo "h,    help            usage help"
+    exit 0
 fi
+
+echo 'Trying to start mysql server...'
+DBRUN=0
+nohup mysqld 2>&1 > ./nohup.log&
+for i in $(seq 1 $WAITTIME); do
+    echo "$(/usr/sbin/service mysql status)"
+    if [[ "$(/usr/sbin/service mysql status)" =~ "not running" ]]; then
+        sleep 1
+    else
+        DBRUN=1
+        break
+    fi
+done
+
+if [[ $DBRUN -eq 0 ]]; then
+    echo "timeout. Can't run mysql server."
+    exit 1
+fi
+
+key="$1"
+case $key in
+up|upgrade)
+    echo "Performing upgrade ${VERSION}..."
+    echo "Please backup before upgrade."
+    read -p "Enter y to continue updating or n to abort and backup:" ans
+    case $ans in
+        [Yy]* )
+            VERSION="$2"
+            if [[ -z $VERSION ]]; then
+                VERSION="head"
+                echo "Version is not specified. Default version is head."
+            fi
+            if [[ $(mysql $DBCNF -N -s -e "select count(*) from information_schema.tables where table_schema='registry' and table_name='alembic_version';") -eq 0 ]]; then
+                echo "table alembic_version does not exist. Trying to initial alembic_version."
+                mysql $DBCNF < ./alembic.sql
+                if [[ $(mysql $DBCNF -N -s -e "select count(*) from information_schema.tables where table_schema='registry' and table_name='properties'") -eq 0 ]]; then
+                    echo "table properties does not exist. The version of registry is 0.1.0"
+                else
+                    echo "The version of registry is 0.1.1"
+                    mysql $DBCNF -e "insert into registry.alembic_version values ('0.1.1')"
+                fi
+            fi
+            alembic -c ./alembic.ini upgrade ${VERSION}
+            echo "Upgrade performed."
+            ;;
+        [Nn]* ) 
+            ;;
+        * ) echo "illegal answer."
+            echo $ans
+            ;;
+    esac
+    ;;
+down|downgrade)
+    echo "Downgrade has been disabled."
+    #echo "Performing downgrade ${VERSION}..."
+    #VERSION="$2"
+    #mysql $DBCNF < ./alembic.sql
+    #alembic -c ./alembic.ini downgrade ${VERSION}
+    #echo "Downgrade performed."
+    ;;
+backup)
+    echo "Performing backup..."
+    mysqldump $DBCNF --add-drop-database --databases registry > ./backup/registry.sql
+    echo "Backup performed."
+    ;;
+restore)
+    echo "Performing restore..."
+    mysql $DBCNF < ./backup/registry.sql
+    echo "Restore performed."
+    ;;
+*)
+    echo "unknown option"
+    exit 0
+    ;;
+esac
