@@ -1,3 +1,17 @@
+# Copyright (c) 2008-2016 VMware, Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """0.1.0 to 0.1.1
 
 Revision ID: 0.1.1
@@ -66,6 +80,9 @@ class Access(Base):
     comment = sa.Column(sa.String(30))
 
 def upgrade():
+    """
+    update schema&data
+    """
     bind = op.get_bind()
     session = Session(bind=bind)
 
@@ -87,8 +104,10 @@ def upgrade():
             user_id=result.user_id, role=result.project_role.role_id, \
             creation_time=datetime.now(), update_time=datetime.now()))
 
-    #op.drop_table('project_role')
-    #op.drop_table('user_project_role')
+    #drop user_project_role table before drop project_role
+    #because foreign key constraint
+    op.drop_table('user_project_role')
+    op.drop_table('project_role')
 
     #add column to table project
     op.add_column('project', sa.Column('update_time', sa.DateTime(), nullable=True))
@@ -103,26 +122,7 @@ def upgrade():
     session.commit()
 
 def downgrade():
-    bind = op.get_bind()
-    session = Session(bind=bind)
-
-    #add M to table access
-    session.add(Access(access_id=1, access_code='A', comment='All access for the system'))
-
-    #drop column from table user
-    op.drop_column('user', 'update_time')
-    op.drop_column('user', 'sysadmin_flag')
-    op.drop_column('user', 'creation_time')
-
-    #drop column from role
-    op.drop_column('role', 'role_mask')
-
-    #drop column from project
-    op.drop_column('project', 'update_time')
-
-    #drop table project_member
-    op.drop_table('project_member')
-
-    #drop table properties
-    op.drop_table('properties')
-    session.commit()
+    """
+    Downgrade has been disabled.
+    """
+    pass
