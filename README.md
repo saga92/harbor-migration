@@ -1,5 +1,8 @@
 # harbor-migration
 harbor-migration is a project for migrating database schema between different version of project [harbor](https://github.com/vmware/harbor)
+
+*WARNING!!* You must backup your data before migrating
+
 ###installation
 - step 1: clone repo
 
@@ -17,13 +20,13 @@ harbor-migration is a project for migrating database schema between different ve
 
     ```docker run your-image-name help```
 
-- create backup file in /path/to/backup
+- create backup file in `/path/to/backup`
 
     ```
     docker run -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup your-image-name backup
     ```
 
-- restore from backup file in /path/to/backup
+- restore from backup file in `/path/to/backup`
 
     ```
     docker run -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup your-image-name restore
