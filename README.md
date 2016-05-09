@@ -1,7 +1,7 @@
 # harbor-migration
 harbor-migration is a project for migrating database schema between different version of project [harbor](https://github.com/vmware/harbor)
 
-*WARNING!!* You must backup your data before migrating
+**WARNING!!** You must backup your data before migrating
 
 ###installation
 - step 1: clone repo
