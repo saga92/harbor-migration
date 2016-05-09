@@ -23,13 +23,13 @@ harbor-migration is a project for migrating database schema between different ve
 - create backup file in `/path/to/backup`
 
     ```
-    docker run -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup your-image-name backup
+    docker run -ti -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup your-image-name backup
     ```
 
 - restore from backup file in `/path/to/backup`
 
     ```
-    docker run -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup your-image-name restore
+    docker run -ti -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup your-image-name restore
     ```
 
 - perform database schema upgrade
