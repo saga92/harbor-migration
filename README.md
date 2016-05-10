@@ -36,7 +36,7 @@ harbor-migration is a project for migrating database schema between different ve
 
     ```docker run -ti -v /data/database:/var/lib/mysql your-image-name up head```
 
-- perform database schema downgrade(downgrade has been disabled)
+- perform database schema downgrade(**downgrade has been disabled**)
 
     ```docker run -v /data/database:/var/lib/mysql your-image-name down base```
 
